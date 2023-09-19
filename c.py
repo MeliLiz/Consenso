@@ -9,7 +9,7 @@ mi_eleccion = format(randrange(3))
 consenso = []
 decisiones = []
 enviada = []
-vecinos = ['172.20.6.11','172.20.6.12']
+vecinos = ['172.20.6.12','172.20.6.13']
 
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
@@ -88,7 +88,7 @@ def consenso():
 #        f.close()
 
 if __name__ == "__main__":
-    HOST, PORT = "172.20.6.13", 12345
+    HOST, PORT = "172.20.6.11", 12345
     server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)
     with server:
         ip, port = server.server_address

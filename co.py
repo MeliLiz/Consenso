@@ -24,11 +24,11 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             self.log(data)
             data = self.quitaD(data)
             print("Se recibió: ", data)
-            cons[IP_cliente] = data
+            cons[IP_cliente] = data #Guardar las decisiones de los proceso
             response = b':D'
             self.request.sendall(response)
         else: #Mensajes de eleccion inicial
-            decisiones[IP_cliente] = data
+            decisiones[IP_cliente] = data #Guardar la eleccion inicial de los procesos
             self.log(data)
             print("Se recibió: ", data)
             response = b':)'
@@ -87,7 +87,9 @@ def enviar_decision():
             print("Decision enviada a ", vecino)
 
 def consenso():
-    if len(set(decisiones.values())) == 1:
+    while len(cons) < len(vecinos):
+        continue
+    if len(set(cons.values())) == 1:
         with open("ganador.txt", "w") as f:
             f.write(mi_eleccion)
             f.close()
