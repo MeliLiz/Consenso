@@ -8,9 +8,9 @@ from threading import Lock
 PUERTO = 12345
 mi_eleccion = format(randrange(3))  # Elección aleatoria inicial en Z3
 mi_eleccion_lock = Lock()
-consenso = {}
-decisiones = {}
-enviada = []
+cons = {} #diccionario de consenso. La llave será la direccion IP. Almacena las decisiones de los vecinos
+decisiones = {} #diccionario de decisiones. La llave sera la direccion IP. Almacena las elecciones iniciales de los vecinos.
+enviada = [] #Lista de los vecinos a los que ya se envio la informacion
 vecinos = ['172.20.6.11', '172.20.6.12']
 
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
@@ -19,14 +19,15 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         data = str(self.request.recv(1024), 'ascii')
         IP_cliente = self.client_address[0]
 
+        #Mensajes de decision
         if data.startswith('D '):
             self.log(data)
             data = self.quitaD(data)
             print("Se recibió: ", data)
-            consenso[IP_cliente] = data
+            cons[IP_cliente] = data
             response = b':D'
             self.request.sendall(response)
-        else:
+        else: #Mensajes de eleccion inicial
             decisiones[IP_cliente] = data
             self.log(data)
             print("Se recibió: ", data)
@@ -56,6 +57,7 @@ def client(ip, message):
         return False
 
 def eleccion():
+    #Enviar la info a los vecinos
     while len(enviada) != len(vecinos):
         for vecino in vecinos:
             if vecino not in enviada:
@@ -67,7 +69,9 @@ def eleccion():
 
 def establece_decision():
     global mi_eleccion
-    # Adquiere el bloqueo antes de modificar mi_eleccion
+    # Bloquear antes de modificar mi_eleccion
+    while len(decisiones) != len(vecinos):
+        continue
     with mi_eleccion_lock:
         d = list(decisiones.values())
         d.append(mi_eleccion)
@@ -83,7 +87,7 @@ def enviar_decision():
             print("Decision enviada a ", vecino)
 
 def consenso():
-    if len(list(decisiones.values())) == 1:
+    if len(set(decisiones.values())) == 1:
         with open("ganador.txt", "w") as f:
             f.write(mi_eleccion)
             f.close()
